@@ -4,6 +4,7 @@
 import requests
 import json
 import time
+import os
 from requests.packages import urllib3
 
 
@@ -104,6 +105,10 @@ def main():
     with open('user_list.txt', 'w') as f:
         for i in login_arr:
             f.write(i["email"] + "\n" + i["passwd"] + "\n")
+    while True:
+        message = input("请按任意键，输入回车退出")
+        if message != "":
+            break
 
 
 if __name__ == '__main__':
