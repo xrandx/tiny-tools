@@ -3,6 +3,9 @@ from cx_Freeze import setup, Executable
 import requests
 import os
 from multiprocessing import Queue
+import time
+from requests.packages import urllib3
+
 
 build_exe_options = {
     "includes":
@@ -10,7 +13,9 @@ build_exe_options = {
         'os',
         'requests', 
         'json',
-        'queue'
+        'queue',
+        'urllib3',
+        'time'
         ]
     }
 
@@ -20,7 +25,7 @@ executable = Executable(r"auto_checkin.py", base=base, icon = "auto_checkin.ico"
 
 setup(
         name = "auto_checkin",
-        version = "0.1",
+        version = "0.3",
         description = "blue.fun Check in",
         options = {'build_exe': build_exe_options},
         executables = [executable],
