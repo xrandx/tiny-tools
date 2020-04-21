@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登录 - 基于SDN的校园网络故障感知运维系统</title>
+	<link href="/static/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="/static/js/bootstrap.min.js"></script>
+	<style>
+		div input{
+			height: 40px;
+		}
+		label {
+			font-size: 18px;
+		}
+	</style>
+</head>
+<body>
+    <div class="container">
+		<div class="col-md-6 col-md-offset-3">
+			<form action="/validation" method="POST">
+				<h1 style="text-align: center;">基于SDN的校园网络故障感知运维系统 登录 </h1>
+				<div class="col-md-12" style="height: 20px;"></div>
+				
+				<label class="col-md-3">用户名</label>
+				<input class="col-md-9" type="text" name="username"  value="" />
+				
+				<div class="col-md-12" style="height: 20px;"></div>
+				
+				<label class="col-md-3">密码</label>
+				<input class="col-md-9" type="password" name="password"  value="" />
+				
+				<div class="col-md-12" style="height: 20px;"></div>
+				
+				<button class="btn flat col-md-4 col-md-offset-4" type="submit">登录</button>
+			</form>
+		</div>
+	</div>
+</body>
+</html>

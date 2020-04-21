@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>控制面板 - 基于SDN的校园网络故障感知运维系统</title>
+<!--    <script src="../static/js/jquery-3.4.1.min.js"></script>-->
+<!--    <link href="../static/css/bootstrap.min.css" rel="stylesheet" type="text/css" />-->
+<!--    <script src="../static/js/bootstrap.min.js"></script>-->
+    <script src="/static/js/jquery-3.4.1.min.js"></script>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="/static/js/bootstrap.min.js"></script>
+    <style>
+        #myTab {
+            font-size: 18px;
+        }
+
+        .dropdown a {
+            font-size: 18px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="col-md-12">
+            <h2 class="col-md-12">基于SDN的校园网络故障感知运维系统 - 控制面板</h2>
+            <h5 class="col-md-6 col-md-offset-6" style="text-align:right">已登录用户：{{session['username']}}</h5>
+            <hr />
+        </div>
+        <ul id="myTab" class="nav nav-tabs">
+            {% for i in session['devices']%}
+            <li>
+                <a href="{{request.base_url}}?device_name={{i}}">
+                    {{i}}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="col-md-2">
+            <hr>
+            <select class="selectpicker  form-control" id="menu_status">
+                <option value='1'>
+                    <h3>设备性能管理</h3>
+                </option>
+                <option value='2'>
+                    <h3>故障管理</h3>
+                    </option>
+                <option value='3'>
+                    <h3>统计报表</h3>
+                </option>
+            </select>
+            <hr>
+            <ul class="nav nav-pills nav-stacked ">
+                <li class="active"><a href="#" onclick="get_version();">基本信息</a></li>
+                <li><a href="#" onclick="panel_interface_brief();">所有接口</a></li>
+                <li><a href="#" onclick="panel_processes_cpu();">CPU信息</a></li>
+                <li><a href="#" onclick="panel_processes_memory();">内存信息</a></li>
+                <li><a href="#" onclick="get_mac_address();">Mac地址表</a></li>
+                <li><a href="#" onclick="panel_download_runningconfig();">配置信息</a></li>
+            </ul>
+            <ul class="nav nav-pills nav-stacked ">
+                    <li class="active"><a href="#" onclick="">故障告警通知</a></li>
+                    <li><a href="#" onclick="">故障告警级别</a></li>
+                    <li><a href="#" onclick="">故障告警类型</a></li>
+                    <li><a href="#" onclick="">故障告警分析</a></li>
+            </ul>
+            <ul class="nav nav-pills nav-stacked ">
+                    <li class="active"><a href="#" onclick="">系统信息汇总</a></li>
+                    <li><a href="#" onclick="">设备性能统计</a></li>
+                    <li><a href="#" onclick="">资源性能统计</a></li>
+                    <li><a href="#" onclick="">设备告警统计</a></li>
+                    <li><a href="#" onclick="">资源告警统计</a></li>
+                    <li><a href="#" onclick="">历史告警统计分析</a></li>
+            </ul>
+        </div>
+
+
+        <br>
+        <div id="myTabContent" class="tab-content col-md-10">
+            <div class="panel panel-primary" id="panel_version">
+                <div class="panel-heading">
+                    <h3 class="panel-title">基本信息</h3>
+
+                </div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <tbody>
+
+                        </tbody>
+                        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal"
+                                            aria-hidden="true">&times;</button>
+                                        <h4 class="modal-title" id="myModalLabel">更改名字</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <input type="text" style="width: 100%" value="{{session['now_device']}}">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                        <button type="button" class="btn btn-primary"
+                                            onclick="hostname();">提交更改</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel panel-default" id="panel_mac_address" hidden>
+                <div class="panel-heading">
+                    <h2 class="panel-title">Mac地址表</h2>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>MAC地址</th>
+                                <th>端口</th>
+                                <th>类型</th>
+                                <th>vlan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer"></div>
+            </div>
+
+            <div class="panel panel-default" id="panel_processes_cpu" hidden>
+                <div class="panel-heading">
+                    <h2 class="panel-title">CPU信息</h2>
+                </div>
+                <div class="panel-body">
+                    <caption>进程表</caption>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>pid</th>
+                                <th>runtime</th>
+                                <th>invoked</th>
+                                <th>usecs</th>
+                                <th>onesec</th>
+                                <th>process</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer"></div>
+            </div>
+            <div class="panel panel-default" id="panel_processes_memory" hidden>
+                <div class="panel-heading">
+                    <h2 class="panel-title">内存信息</h2>
+                </div>
+                <div class="panel-body">
+                    <caption>内存表</caption>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>mem_pid</th>
+                                <th>mem_alloc</th>
+                                <th>mem_limit</th>
+                                <th>mem_used</th>
+                                <th>stack_base_ptr</th>
+                                <th>process</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer"></div>
+            </div>
+            <div class="panel panel-default" id="panel_interface_brief" hidden>
+                <div class="panel-heading">
+                    <h2 class="panel-title">接口信息</h2>
+                </div>
+                <div class="panel-body">
+                    <caption>内存表</caption>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>接口名称</th>
+                                <th>IP</th>
+                                <th>proto-state</th>
+                                <th>link-state</th>
+                                <th>admin-state</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer"></div>
+            </div>
+            <div class="panel panel-default" id="panel_download_runningconfig" hidden>
+                <div class="panel-heading">
+                    <h2 class="panel-title">下载running-config</h2>
+                </div>
+                <div class="panel-body">
+                    <button class="btn btn-default">
+                        <a href="{{request.base_url}}download_runningconfig">下 载</a>
+                    </button>
+                </div>
+                <div class="panel-footer"></div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    DeviceName = "{{session['now_device']}}"
+
+    $(".nav-pills").on("click", "li", function () {
+        $(".nav-pills li").each(function () {
+            $(this).removeClass("active");
+        })
+        $(this).addClass("active");
+    })
+
+    $(window).on('load', function () {
+        $("#myTab li").each(function () {
+            if (DeviceName === $.trim($(this).text())) {
+                $(this).addClass("active");
+            }
+        })
+        subDisplayMenu(1);
+        get_version();
+    });
+    
+    $("#menu_status").change(function(){
+        subDisplayMenu($(this).val())
+    });
+
+    function subDisplay(name) {
+        $("#myTabContent").children().each(function () {
+            $(this).hide();
+        });
+        $(name).show();
+    }
+
+    function subDisplayMenu(now){
+        now -= 1
+        menus = $(".nav-pills")
+        for(i = 0; i < 3 ; i++){
+            $(menus[i]).hide();
+        }
+        $(menus[now]).show();
+        if(now != 0){
+            $("#myTabContent").hide();
+        }
+        else{
+            $("#myTabContent").show();
+        }
+    }
+
+    function hostname() {
+        window.location.href = "/hostname?hostname=" + $(".modal-body input").val()
+    }
+
+    function panel_download_runningconfig() {
+        subDisplay("#panel_download_runningconfig");
+    }
+
+    function panel_processes_cpu() {
+        subDisplay("#panel_processes_cpu");
+        $.ajax({
+            type: 'POST',
+            url: '/panel_processes_cpu',
+            data: "device_name=" + DeviceName,
+            dataType: 'json',
+            success: function (data) {
+                array = data["TABLE_process_cpu"]["ROW_process_cpu"]
+                html_str = ""
+                for (var i = 0; i < array.length; i++) {
+                    obj = array[i]
+                    html_str += "<tr><td>" + obj["pid"] + "</td>"
+                    html_str += "<td>" + obj["runtime"] + "</td>"
+                    html_str += "<td>" + obj["invoked"] + "</td>"
+                    html_str += "<td>" + obj["usecs"] + "</td>"
+                    html_str += "<td>" + obj["onesec"] + "</td>"
+                    html_str += "<td>" + obj["process"] + "</td></tr>"
+                }
+                $("#panel_processes_cpu div table tbody").html(html_str)
+            }
+        });
+    }
+
+    function panel_processes_memory() {
+        subDisplay("#panel_processes_memory");
+        $.ajax({
+            type: 'POST',
+            url: '/panel_processes_memory',
+            data: "device_name=" + DeviceName,
+            dataType: 'json',
+            success: function (data) {
+                array = data["TABLE_process_memory"]["ROW_process_memory"]
+                html_str = ""
+                for (var i = 0; i < array.length; i++) {
+                    obj = array[i]
+                    html_str += "<tr><td>" + obj["mem_pid"] + "</td>"
+                    html_str += "<td>" + obj["mem_alloc"] + "</td>"
+                    html_str += "<td>" + obj["mem_limit"] + "</td>"
+                    html_str += "<td>" + obj["mem_used"] + "</td>"
+                    html_str += "<td>" + obj["stack_base_ptr"] + "</td>"
+                    html_str += "<td>" + obj["process"] + "</td></tr>"
+                }
+                $("#panel_processes_memory div table tbody").html(html_str)
+            }
+        });
+    }
+
+    function panel_interface_brief() {
+        subDisplay("#panel_interface_brief");
+        $.ajax({
+            type: 'POST',
+            url: '/panel_interface_brief',
+            data: "device_name=" + DeviceName,
+            dataType: 'json',
+            success: function (array) {
+                html_str = ""
+                if (array === "None") {
+                    html_str = "<tr><td> 无接口信息</td></tr>"
+                } else {
+                    for (var i = 0; i < array.length; i++) {
+                        obj = array[i]
+                        html_str += "<tr><td>" + obj["intf-name"] + "</td>"
+                        html_str += "<td>" + obj["prefix"] + "</td>"
+                        html_str += "<td>" + obj["proto-state"] + "</td>"
+                        html_str += "<td>" + obj["link-state"] + "</td>"
+                        html_str += "<td>" + obj["admin-state"] + "</td></tr>"
+                    }
+                }
+
+                $("#panel_interface_brief div table tbody").html(html_str)
+            }
+        });
+    }
+
+    function get_version() {
+        subDisplay("#panel_version");
+        $.ajax({
+            type: 'POST',
+            url: '/panel_version',
+            data: "device_name=" + DeviceName,
+            dataType: 'json',
+            success: function (data) {
+                html_str = "<tr><th class=\"col-md-2\">主机名</th><td class=\"col-md-10\">" + data[
+                        "host_name"] +
+                    "<button class=\"btn btn-primary flat col-md-offset-8\" data-toggle=\"modal\" data-target=\"#myModal\">更改名字</td></tr>"
+                html_str += "<tr><th>型号</th><td>" + data["chassis_id"] + "</td></tr>"
+                html_str += "<tr><th>产商</th><td>" + data["manufacturer"] + "</td></tr>"
+                html_str += "<tr><th>版本</th><td>" + data["kickstart_ver_str"] + "</td></tr>"
+                html_str += "<tr><th>固件版本</th><td>" + data["kick_file_name"] + "</td></tr>"
+                html_str += "<tr><th>安装时间</th><td>" + data["kick_cmpl_time"] + "</td></tr>"
+                html_str += "<tr><th>详情</th><td>" + data["header_str"] + "</td></tr>"
+                $("#panel_version div table tbody").html(html_str)
+            }
+
+        });
+    }
+
+    function get_mac_address() {
+        subDisplay("#panel_mac_address");
+        $.ajax({
+            type: 'POST',
+            url: '/panel_mac_address',
+            data: "device_name=" + DeviceName,
+            dataType: 'json',
+            success: function (data) {
+                obj = data['TABLE_mac_address']['ROW_mac_address']
+                html_str = "<tr><td>" + obj["disp_mac_addr"] + "</td>"
+                html_str += "<td>" + obj["disp_port"] + "</td>"
+                html_str += "<td>" + obj["disp_type"] + "</td>"
+                html_str += "<td>" + obj["disp_vlan"] + "</td> </tr>"
+                $("#panel_mac_address div table tbody").html(html_str)
+            }
+        });
+
+    }
+
+
+</script>
+
+</html>
