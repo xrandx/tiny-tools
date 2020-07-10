@@ -1,0 +1,172 @@
+.markdown-here-wrapper {
+  font-size: 16px;
+  line-height: 1.8em;
+  letter-spacing: 0.1em;
+}
+
+pre, code {
+  font-size: 14px;
+  font-family:Roboto, 'Courier New', Consolas, Inconsolata, Courier, monospace;
+  margin: auto 5px;
+}
+
+code {
+  white-space: pre-wrap;
+  border-radius: 2px;
+  display: inline;
+}
+
+pre {
+  font-size: 15px;
+  line-height: 1.4em;
+  display: block; !important;
+}
+
+pre code {
+  white-space: pre;
+  overflow: auto;
+  border-radius: 3px;
+  padding: 1px 1px;
+  display: block !important;
+}
+
+strong, b{
+  color: rgb(60, 112, 198);
+}
+
+a {
+  color: rgb(60, 112, 198);
+  text-decoration: none;
+  border-bottom: 1px solid rgb(60, 112, 198);
+}
+
+em , i{
+  color: rgb(60, 112, 198);
+}
+
+hr {
+  background-color:  #8CA9D3;
+  width: 100%;
+  height: 2px;
+  margin: 1.5em auto;
+  border:none;
+  border-top:1px solid #8CA9D3;
+}
+
+p {
+  margin: 1.5em 5px !important;
+}
+
+table, pre, dl, blockquote, q, ul, ol {
+  margin: 10px 5px;
+}
+
+ul, ol {
+  padding-left: 15px;
+}
+
+li {
+  margin: 10px;
+}
+
+li p {
+  margin: 10px 0 !important;
+}
+
+ul ul, ul ol, ol ul, ol ol {
+  margin: 0;
+  padding-left: 10px;
+}
+
+ul {
+  list-style-type: square;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 1em;
+  font-weight: bold;
+  font-style: italic;
+}
+
+dl dd {
+  margin: 0 0 10px;
+  padding: 0 10px;
+}
+
+blockquote, q{
+    quotes: none;
+    padding: 10px 20px;
+    line-height: 27px;
+    background-color: rgb(239, 239, 239);
+    border-left:none;
+    display:block;
+}
+
+blockquote::before, blockquote::after, q::before, q::after {
+  content: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 2.5em !important; 
+  margin-bottom: 1em !important;
+  font-weight: bold !important;
+  color: black !important;
+  text-align: center !important;
+}
+
+h1 {
+  font-size: 24px !important;
+  /* border-bottom: 1px solid #ddd !important; */
+}
+
+h2 {
+  font-size: 20px !important;
+  /* border-bottom: 1px solid #eee !important; */
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+
+table {
+  padding: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 1em;
+  font: inherit;
+  border: 0;
+  margin: 0 auto;
+  width: 100%;
+}
+
+tbody {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+table tr:nth-child(2n) {
+  background-color: #F8F8F8;
+}
+
+table tr th, table tr td {
+  font-size: 16px;
+  border: 1px solid #CCC;
+  margin: 0;
+  padding: 5px 10px;
+}
+
+table tr th {
+  font-weight: bold;
+  color: #3f3f3f;
+  background-color:  #f0f0f0; 
+}
