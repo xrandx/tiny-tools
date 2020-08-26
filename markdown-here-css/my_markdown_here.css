@@ -113,7 +113,7 @@ blockquote::before, blockquote::after, q::before, q::after {
   content: none;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4 {
   margin-top: 2.5em !important; 
   margin-bottom: 1em !important;
   font-weight: bold !important;
@@ -139,6 +139,16 @@ h4 {
   font-size: 16px;
 }
 
+h5 {
+    display: block;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    text-align: center;
+    font-weight: normal;
+    font-style: italic;
+    color: #3f3f3f;
+    font-size: 12px;
+}
 
 table {
   padding: 0;
