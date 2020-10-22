@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>16计健康码收集</title>
+    <script src="../static/vue.js"></script>
+    <script src="../static/axios.js"></script>
+    <script src="../static/index.js"></script>
+    <link rel="stylesheet" href="../static/theme.css">
+    <style>
+        .avatar-uploader .el-upload {
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-uploader .el-upload:hover {
+            border-color: #409EFF;
+        }
+
+        .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 178px;
+            height: 178px;
+            line-height: 178px;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 178px;
+            height: 178px;
+            display: block;
+        }
+
+        img {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+
+<el-row>
+    <el-col id="dialog">
+        <el-form :label-position="'left'">
+            <el-form-item><h1>16计健康码收集</h1></el-form-item>
+
+            <el-form-item label="名字">
+                <el-col :span="18">
+                    <el-input v-model="name" prop="name" preholder="请输入名字"></el-input>
+                </el-col>
+            </el-form-item>
+
+            <el-form-item label="上传">
+                <el-col :span="20">
+                    <el-button><input type="file" value="" id="file" @change="uploadConfig">
+                    </el-button>
+                </el-col>
+                <el-col :span="24">
+                    <el-divider></el-divider>
+                </el-col>
+                <el-col :span="8">
+                    <img v-if="imageUrl" :src="imageUrl" alt="图片上传失败">
+                    </i>
+                </el-col>
+            </el-form-item>
+            <el-form-item label="进度">
+                <el-col :span="20">
+                    <el-progress :percentage="percentage" status="success"></el-progress>
+                </el-col>
+            </el-form-item>
+
+
+        </el-form>
+
+        <el-col>
+
+            <el-row :gutter="10">
+                <el-col :span="22" :offset="1"><h3>未交的人:{{tableData.length}}个</h3></el-col>
+                <el-col>
+                    <el-divider>点击卡片可选择名字</el-divider>
+                </el-col>
+                <el-col v-for="card in tableData" :span="8">
+
+                    <el-card shadow="hover">
+                        <div @click="assignmentName">
+                            {{card.forget_name}}
+                        </div>
+                    </el-card>
+
+
+                </el-col>
+            </el-row>
+        </el-col>
+    </el-col>
+</el-row>
+
+</body>
+
+<script>
+    BASE = window.document.location.href;
+    vm = new Vue({
+        el: '#dialog',
+        data: {
+            name: '',
+            imageUrl: '',
+            percentage: 0,
+            tableData: []
+        },
+        computed: {
+            // 设置请求头
+            headers() {
+                return {
+                    // 设置Content-Type类型为multipart/form-data
+                    'ContentType': 'multipart/form-data',
+                }
+            },
+            // 设置上传地址
+        },
+
+        methods: {
+            uploadConfig(e) {
+                if (this.name == "") {
+                    this.$message.error('请填写姓名')
+                } else {
+                    let formData = new FormData();
+                    let data = JSON.stringify({
+                        name: this.name
+                    });
+                    formData.append('data', data);   // 上传文件的同时， 也可以上传其他数据
+                    formData.append('file', e.target.files[0]);
+                    let config = {
+                        headers: {'Content-Type': 'multipart/form-data'}
+                    };
+                    axios.post("upload", formData, config).then(res => {
+                        if (res.code === 200 || res.code == null || res.code === 0) {
+                            for (; this.percentage < 100; this.percentage++) ;
+                            this.$message({
+                                message: '成功上传你的健康码😂再见',
+                                type: 'success'
+                            });
+                            this.imageUrl = BASE + res.data;
+                            this.forget();
+                        } else {
+                            this.$message.error(res.msg || res.message || '文件上传失败')
+                        }
+
+                    }).catch((err) => {
+                        this.$message.error(err.message || '文件上传失败')
+                    })
+                }
+
+
+            },
+            forget() {
+                var self = this;
+                axios.get(BASE + "forget").then(function (response) {
+                    self.tableData = response.data;
+                })
+            },
+            assignmentName(e) {
+                this.name = e.target.innerText;
+            }
+        },
+        mounted: function () {
+            this.forget();
+        }
+
+    })
+
+
+</script>
+</html>

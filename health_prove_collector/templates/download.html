@@ -1,0 +1,50 @@
+<!doctype html>
+<html >
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>16计健康码下载</title>
+    <script src="../static/vue.js"></script>
+    <script src="../static/axios.js"></script>
+    <script src="../static/index.js"></script>
+    <link rel="stylesheet" href="../static/theme.css">
+    <meta charset="UTF-8">
+</head>
+<body>
+<div id="app">
+    <el-col>
+        <el-button v-on:click="download" size="medium">
+            下载压缩包并删除遗留的截图
+        </el-button>
+    </el-col>
+</div>
+
+</body>
+<script>
+
+    BASE = window.location.origin;
+
+    vm = new Vue({
+        el: "#app",
+        methods: {
+            download() {
+                axios.get("download/file").then(res => {
+                    if (res.code == null || res.code === 0) {
+                        console.log(res.data)
+                        window.location.href = BASE + res.data
+                    } else {
+                        this.$message.error(res.msg || res.message || '失败')
+                    }
+                }).catch((err) => {
+                    this.$message.error(err.message || '失败')
+                })
+            }
+
+
+        }
+    })
+</script>
+
+</html>
