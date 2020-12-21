@@ -3,6 +3,8 @@ Something fun.
 My little toys.
 2018/6/29
 
+代码风格稀烂，完全不讲软件工程，纯粹实现功能。
+
 
 ### CiscoPanel
 帮老师的团队参加一个 sdn 比赛的网站，能查看设备状态。
