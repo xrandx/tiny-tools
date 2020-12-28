@@ -48,8 +48,10 @@ class InputDataModel:
 
     k_packet_num = Column(Integer)
     k = Column(DOUBLE)
+    b = Column(DOUBLE)
     k0_packet_num = Column(Integer)
     k0 = Column(DOUBLE)
+    b0 = Column(DOUBLE)
     k0_accumulate = Column(DOUBLE)
     mutation_accumulate = Column(DOUBLE)
 
@@ -70,8 +72,8 @@ def least_square(former_days_list):
     x = [fmt(data.temperature) for data in former_days_list]
     y = [fmt(data.strain) for data in former_days_list]
     x, y = np.array(x), np.array(y)
-    a = np.polyfit(x, y, 1)
-    return fmt(a[0])
+    coefficient = np.polyfit(x, y, 1)
+    return fmt(coefficient[0]), fmt(coefficient[1])
 
 
 def parse_time(date, time):
@@ -96,17 +98,19 @@ def get_k_packet_num_by_date(days, InputDataClass):
     recent_data_list = session.query(InputDataClass) \
         .filter(InputDataClass.date.in_(recent_days)) \
         .all()
-    return least_square(recent_data_list), len(recent_data_list)
+    temp = least_square(recent_data_list)
+    return temp[0], temp[1], len(recent_data_list)
 
 
-def get_k_by_packet_num(packet_num, InputDataClass):
+def get_k_b_by_packet_num(packet_num, InputDataClass):
     former_days_list = session.query(InputDataClass) \
         .order_by(InputDataClass.id.desc()) \
         .limit(packet_num)
-    return least_square(former_days_list)
+    temp = least_square(former_days_list)
+    return temp[0], temp[1]
 
 
-def get_k_k0(InputDataClass, flag_day_num, last_data, src_data):
+def get_k_b_k0_b0(InputDataClass, flag_day_num, last_data, src_data):
     recorded_day_count = session.query(func.count(distinct(InputDataClass.date))).scalar()
     new_day = False
     if last_data.date != src_data.date:
@@ -115,44 +119,45 @@ def get_k_k0(InputDataClass, flag_day_num, last_data, src_data):
 
     #   d > 16
     if acc_days > flag_day_num + 1:
-        k = get_k_by_packet_num(last_data.k_packet_num, InputDataClass)
-        return last_data.k0_packet_num, last_data.k0, last_data.k_packet_num, k, last_data.k0_accumulate
+        k, b = get_k_b_by_packet_num(last_data.k_packet_num, InputDataClass)
+        return last_data.k0_packet_num, last_data.k0, last_data.b0, last_data.k_packet_num, k, b,last_data.k0_accumulate
     #   3 <= d <= 16
     elif 3 <= acc_days <= flag_day_num + 1:
         #   3 <= d <= 16 new day
         if new_day:
             #   d = 3, 8, 16  new day
             if acc_days in [3, 8, 16]:
-                k0 = 0
+                k0 = 0.0
+                b0 = 0.0
                 k0_accumulate = 0
                 k0_packet_num = 0
                 if acc_days == 3:
-                    k0, k0_packet_num = get_k_packet_num_by_date(2, InputDataClass)
+                    k0, b0, k0_packet_num = get_k_packet_num_by_date(2, InputDataClass)
                     k0_accumulate = 0
                 elif acc_days == 8:
-                    k0, k0_packet_num = get_k_packet_num_by_date(7, InputDataClass)
+                    k0, b0, k0_packet_num = get_k_packet_num_by_date(7, InputDataClass)
                     k0_accumulate = k0 - last_data.k0
                 elif acc_days == 16:
-                    k0, k0_packet_num = get_k_packet_num_by_date(15, InputDataClass)
+                    k0, b0, k0_packet_num = get_k_packet_num_by_date(15, InputDataClass)
                     k0_accumulate = k0 - last_data.k0 + last_data.k0_accumulate
                 k_packet_num = k0_packet_num
-                k = get_k_by_packet_num(k_packet_num, InputDataClass)
-                return k0_packet_num, k0, k_packet_num, k, k0_accumulate
+                k, b = get_k_b_by_packet_num(k_packet_num, InputDataClass)
+                return k0_packet_num, k0, b0, k_packet_num, k, b, k0_accumulate
             #   d = 4, 5, 6, 7, 9, ... , 16 new day
             else:
                 k_packet_num = last_data.k_packet_num + 1
-                k = get_k_by_packet_num(k_packet_num, InputDataClass)
-                return last_data.k0_packet_num, last_data.k0, k_packet_num, k, last_data.k0_accumulate
+                k, b = get_k_b_by_packet_num(k_packet_num, InputDataClass)
+                return last_data.k0_packet_num, last_data.k0, last_data.b0, k_packet_num, k, b, last_data.k0_accumulate
 
         #   3 < d <= 16 not new day
         else:
             if acc_days == 16:
-                k = get_k_by_packet_num(last_data.k_packet_num, InputDataClass)
-                return last_data.k0_packet_num, last_data.k0, last_data.k_packet_num, k, last_data.k0_accumulate
+                k, b = get_k_b_by_packet_num(last_data.k_packet_num, InputDataClass)
+                return last_data.k0_packet_num, last_data.k0, last_data.b0, last_data.k_packet_num, k, b, last_data.k0_accumulate
             else:
                 k_packet_num = last_data.k_packet_num + 1
-                k = get_k_by_packet_num(k_packet_num, InputDataClass)
-                return last_data.k0_packet_num, last_data.k0, k_packet_num, k, last_data.k0_accumulate
+                k, b = get_k_b_by_packet_num(k_packet_num, InputDataClass)
+                return last_data.k0_packet_num, last_data.k0, last_data.b0, k_packet_num, k, b, last_data.k0_accumulate
     #   d < 3
     elif acc_days < 3:
         return None
@@ -164,7 +169,9 @@ def parser_form(data):
     data.temperature = fmt(data.temperature)
     data.strain = fmt(data.strain)
     data.k0 = fmt(data.k0)
+    data.b0 = fmt(data.b0)
     data.k = fmt(data.k)
+    data.b = fmt(data.b)
     data.k0_accumulate = fmt(data.k0_accumulate)
     data.mutation_accumulate = fmt(data.mutation_accumulate)
     return data
@@ -177,11 +184,11 @@ def get_param(src_data, InputDataClass):
     last_data = parser_form(last_data)
     if last_data is None:
         return None
-    tmp = get_k_k0(InputDataClass, 15, last_data, src_data)
+    tmp = get_k_b_k0_b0(InputDataClass, 15, last_data, src_data)
     if tmp is None:
         return None
     else:
-        k0_packet_num, k0, k_packet_num, k, k0_accumulate = tmp
+        k0_packet_num, k0, b0, k_packet_num, k, b, k0_accumulate = tmp
         mutation = (src_data.strain - last_data.mutation_accumulate - last_data.strain) -\
                    (k0 * (src_data.temperature - last_data.temperature))
         mutation = fmt(mutation)
@@ -196,26 +203,31 @@ def get_param(src_data, InputDataClass):
                 and deviation
 
         if truth:
-            return k0_packet_num, k0, k_packet_num, k, k0_accumulate, last_data.mutation_accumulate + mutation
+            return k0_packet_num, k0, b0, k_packet_num, k, b, k0_accumulate, last_data.mutation_accumulate + mutation
         else:
-            return k0_packet_num, k0, k_packet_num, k, k0_accumulate, last_data.mutation_accumulate
+            return k0_packet_num, k0, b0, k_packet_num, k, b, k0_accumulate, last_data.mutation_accumulate
 
 
 def compute_save(data, InputDataClass):
     #   更新参数 Mnemonic.param
     tmp = get_param(data, InputDataClass)
     # None : < 3 days
-    if tmp is not None:
-        k0_packet_num, k0, k_packet_num, k, k0_accumulate, mutation_accumulate = tmp
-        data.height = fmt((-k + k0 - k0_accumulate) * 0.5 + mutation_accumulate * 0.0189)
-        data.tsf = fmt((-k + k0 - k0_accumulate) * 0.6 + 10 + mutation_accumulate * 0.08475)
-        data.strain -= mutation_accumulate
 
-        data.stress = fmt(0.21 * 11.8 * (data.temperature - data.tsf))
+    if tmp is not None:
+
+        k0_packet_num, k0, b0, k_packet_num, k, b, k0_accumulate, mutation_accumulate = tmp
+        data.height = fmt((-k + k0 - k0_accumulate) * 0.5 + mutation_accumulate * 0.0189)
+        # Tsf = (K - K[0] - ΣΔk0) * 0.075 + (B - B[0]) * 0.015 + 总Δε * 0.08475
+        data.tsf = fmt((k - k0 - k0_accumulate) * 0.075 + (b - b0) * 0.015 + mutation_accumulate * 0.08475)
+        data.strain -= mutation_accumulate
+        # stress = -11.8 * 0.21 * (temperature - tsf)
+        data.stress = fmt(0.21 * (-11.8) * (data.temperature - data.tsf))
 
         data.k0 = k0
+        data.b0 = b0
         data.k0_packet_num = k0_packet_num
         data.k0_accumulate = k0_accumulate
+        data.b = b
         data.k = k
         data.k_packet_num = k_packet_num
 
